@@ -1,0 +1,69 @@
+---
+title: 'Wumpus'
+description: 'Lorem'
+icon: 'house'
+---
+
+## Wumpus
+
+The Wumpus component is a core part of the Discord bot, responsible for initializing and managing the bot's functionality. It provides a structured approach to handling commands, events, and middlewares, as well as interacting with the database and other components.
+
+### Properties
+<ResponseField name="instance" type="Client" required>
+The Discord.js client instance
+</ResponseField>
+<ResponseField name="temp" type="TempManager" required>
+A temporary data storage manager.
+</ResponseField>
+<ResponseField name="middleware" type="MiddlewareManager" required>
+A middleware manager responsible for handling middleware functionality.
+</ResponseField>
+<ResponseField name="command" type="CommandManager" required>
+A command manager responsible for handling command functionality.
+</ResponseField>
+<ResponseField name="buttons" type="ButtonManager" required>
+A button manager responsible for handling button interactions.
+</ResponseField>
+<ResponseField name="database" type="Database" required>
+A database instance for storing and retrieving data.
+</ResponseField>
+<ResponseField name="superusers" type="string[]" required>
+An array of user IDs with elevated permissions.
+</ResponseField>
+<ResponseField name="logger" type="Logger" required>
+A logger instance for logging events and errors.
+</ResponseField>
+<ResponseField name="stator" type="Stator" required>
+A stator instance for managing state.
+</ResponseField>
+
+### Methods
+<ResponseField name="init" type="void">
+Initializes the Wumpus component, loading temporary data, parsing environment variables, and setting up the database, middlewares, commands, and events.
+</ResponseField>
+<ResponseField name="start" type="void">
+Starts the Wumpus component, logging in to Discord and fetching the bot's owner information.
+</ResponseField>
+<ResponseField name="getOwner" type="void">
+Fetches the bot's owner information and populates the superusers array.
+</ResponseField>
+<ResponseField name="repository" type="Repository">
+Returns a repository instance for the specified name.
+</ResponseField>
+
+### Lifecycle
+1. The `main()` function creates a new instance of the Wumpus component.
+2. The `init()` method is called to initialize the component.
+3. The `start()` method is called to start the component.
+4. The `getOwner()` method is called to fetch the bot's owner information.
+
+### Notes
+<Note>
+The component uses a structured approach to handling commands, events, and middlewares, making it easy to extend and customize the bot's functionality.
+</Note>
+<Note>
+The component uses a database instance to store and retrieve data, providing a centralized data management solution.
+</Note>
+<Warning>
+The Wumpus component is designed to be a singleton instance, with a single instance created and managed throughout the application's lifecycle.
+</Warning>
