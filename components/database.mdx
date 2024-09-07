@@ -1,0 +1,77 @@
+---
+title: 'Database'
+description: 'The Database class is responsible for managing the database connection, initializing repositories, and providing access to them. It uses TypeORM to interact with a PostgreSQL database and dynamically loads entity repositories.'
+icon: 'database'
+---
+
+### Properties
+<ResponseField name="client" type="Wumpus" required>
+The Wumpus client instance.
+</ResponseField>
+<ResponseField name="datasource" type="DataSource" required>
+The TypeORM DataSource instance for database connection.
+</ResponseField>
+<ResponseField name="repositories" type="Map<string, Repository<any>>" required>
+A map of repository tokens to their corresponding TypeORM Repository instances.
+</ResponseField>
+
+### Methods
+<ResponseField name="constructor" type="Database">
+Creates a new Database instance with the given Wumpus client.
+</ResponseField>
+<ResponseField name="initialize" type="Promise<void>">
+Initializes the database connection and loads entity repositories.
+</ResponseField>
+<ResponseField name="repository" type="Repository<RepositoriesMap[T]> | undefined">
+Retrieves a repository instance by its token name.
+</ResponseField>
+
+### Configuration
+The Database class uses the following environment variables for configuration:
+- `DATABASE_HOST`: The hostname of the PostgreSQL server.
+- `DATABASE_PORT`: The port number of the PostgreSQL server.
+- `DATABASE_USER`: The username for database authentication.
+- `DATABASE_PASSWORD`: The password for database authentication.
+- `DATABASE_NAME`: The name of the database to connect to.
+- `ENVIRONMENT`: If set to 'development', enables synchronize mode for TypeORM.
+
+### Lifecycle
+1. The Database instance is created with a Wumpus client.
+2. The `initialize` method is called to set up the database connection.
+3. Entity files are dynamically loaded from the `src/entity` directory.
+4. Repositories are created for each entity and stored in the `repositories` map.
+5. The `repository` method can be used to access specific repositories throughout the application.
+
+### Notes
+<Note>
+The Database class automatically loads all entity files from the `src/entity` directory, making it easy to add new entities without modifying the database setup.
+</Note>
+<Note>
+The `repository` method uses a type parameter to ensure type safety when retrieving repositories.
+</Note>
+<Warning>
+Ensure that all required environment variables are set before initializing the Database instance.
+</Warning>
+<Warning>
+The `synchronize` option is set to true in development mode. Be cautious when using this in a production environment, as it can lead to data loss.
+</Warning>
+
+### Example Usage
+```typescript
+const database = new Database(wumpus);
+
+async function setup() {
+  await database.initialize();
+  
+  // Accessing a repository
+  const userRepository = database.repository('user');
+  if (userRepository) {
+    const users = await userRepository.find();
+    console.log('Users:', users);
+  }
+}
+
+setup().catch(console.error);
+```
+
+This example demonstrates how to create a Database instance, initialize it, and use the `repository` method to access a specific repository.

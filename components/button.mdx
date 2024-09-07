@@ -1,125 +1,49 @@
 ---
 title: 'Button'
-description: 'Lorem'
+description: 'The Button component is a core part of the Wumpus Discord bot framework, responsible for creating and managing interactive buttons in Discord messages. It provides a structured approach to defining button properties, handling interactions, and executing associated actions.'
 icon: 'square-check'
 ---
 
-## Button
-
-The Button component is a customizable and reusable button system for Discord interactions. It provides a flexible way to create buttons with various styles, labels, and behaviors.
-
 ### Properties
 <ResponseField name="identifier" type="string" required>
-A unique string identifier for the button.
+A unique identifier for the button. This is used to distinguish the button from others.
 </ResponseField>
-<ResponseField name="labels" type="Record" required>
-An object containing localized labels for the button, keyed by Discord locale.
+<ResponseField name="labels" type="{ [key in Locale]?: string }" required>
+A dictionary of labels for the button, keyed by locale. This allows the button to display different text based on the user's locale.
 </ResponseField>
-<ResponseField name="fields" type="Field[]">
-An array of button fields, which define the options and requirements for the button.
+<ResponseField name="fields" type="ButtonField[]" optional>
+An optional array of fields that the button requires. Each field is defined by the ButtonField interface.
 </ResponseField>
-<ResponseField name="repositories" type="Repository[]">
-An array of TypeORM entity classes or schemas, used to inject repositories into the button's execution context.
+<ResponseField name="repositories" type="EntityClassOrSchema[]" optional>
+An optional array of repositories that the button interacts with. Each repository is defined by the EntityClassOrSchema type.
 </ResponseField>
-<ResponseField name="execute" type="ButtonExecutor" required>
-A function that executes when the button is clicked, taking in the interaction, options, client, and repositories as arguments.
-</ResponseField>
-
-<ResponseField name="style" type="ButtonStyle">
-  The style of the button, which can be one of the following: `Primary`, `Secondary`, `Success`, `Danger`
-</ResponseField>
-<ResponseField name="emoji" type="string">
-emoji: An optional emoji to display on the button.
-</ResponseField>
-
-### Button fields
-<ResponseField>
-  Button fields define the options and requirements for the button. Each field has the following properties:
-  <ResponseField name="type" type="string" required>
-    The type of the field, which can be one of the following:`BOOLEAN`, `CHANNEL`, `INTEGER`, `MEMBER`, `NUMBER`, `ROLE`, `STRING`, `USER`
-  </ResponseField>
-  <ResponseField name="name" type="string" required>
-    The name of the field.
-  </ResponseField>
-  <ResponseField name="required" type="boolean">
-    A boolean indicating whether the field is required.
-  </ResponseField>
-  Example: 
-  ```json
-  {
-    "type": "BOOLEAN",
-    "name:" "isActive",
-    "required": true
-  }
-  ```
-</ResponseField>
-
-### Button Options
-Button options define the configuration for the button. The following options are available:
-<ResponseField name="identifier" type="string" required>
-The unique string identifier for the button.
-</ResponseField>
-<ResponseField name="labels" type="Record" required>
-The localized labels for the button.
-</ResponseField>
-<ResponseField name="fields" type="Field[]">
-The array of button fields.
-</ResponseField>
-<ResponseField name="repositories" type="Repository[]">
-The array of TypeORM entity classes or schemas.
+<ResponseField name="execute" type="ButtonExecutor<InferOptions<T>, Repository<EntityInstanceType<R[number]>>[]>" required>
+A function that is executed when the button is interacted with. This function receives the interaction, options, client, and repositories as parameters.
 </ResponseField>
 <ResponseField name="style" type="ButtonStyle" required>
-The style of the button.
+The style of the button. This is defined by the ButtonStyle enum.
 </ResponseField>
-<ResponseField name="emoji" type="string">
-The optional emoji to display on the button.
-</ResponseField>
-<ResponseField name="execute" type="ButtonExecutor" required>
-The function that executes when the button is clicked.
+<ResponseField name="emoji" type="string" optional>
+An optional emoji that is displayed on the button.
 </ResponseField>
 
-### Button Executor
-The button executor is a function that takes in the following arguments:
-
-<ResponseField name="interaction" type="ButtonInteraction">
-The Discord interaction object.
-</ResponseField>
-<ResponseField name="options" type="Object">
-The options object, which contains the values for the button fields.
-</ResponseField>
-<ResponseField name="client" type="Wumpus">
-The Wumpus client instance.
-</ResponseField>
-<ResponseField name="...repositories" type="Repository[]">
-The injected repositories, which are instances of TypeORM repositories.
+### Methods
+<ResponseField name="constructor" type="Button<T, R>">
+Initializes a new instance of the Button class with the provided options.
 </ResponseField>
 
-The executor function returns a promise that resolves to any value.
+### Lifecycle
+1. The `Button` class is instantiated with the required options.
+2. The `ButtonManager` adds the button to manage its interactions.
+3. The `execute` method is called when the button is interacted with, performing the associated action.
 
-### Inference and Dynamic Requirements
-The button component uses inference and dynamic requirements to simplify the development process. The `InferOptions` type infers the options object type based on the button fields, and the `DynamicRequirements` type ensures that required fields are always present in the options object.
-
-### Example Usage
-```ts
-const button = new Button({
-  identifier: 'my-button',
-  labels: {
-    'en-US': 'My Button',
-    'tr': 'Benim Düğmem',
-  },
-  fields: [
-    {
-      type: 'STRING',
-      name: 'myfield',
-      required: true,
-    },
-  ],
-  repositories: [MyEntity],
-  style: ButtonStyle.Primary,
-  emoji: '👍',
-  execute: async (interaction, options, client, myEntityRepository) => {
-    //...
-  },
-});
-```
-This example creates a button with a unique identifier, localized labels, and a required string field. The button executor function takes in the interaction, options, client, and myEntityRepository as arguments.
+### Notes
+<Note>
+The Button component allows for the creation of interactive buttons in Discord messages, enhancing user engagement and interaction.
+</Note>
+<Note>
+The Button component can be customized with different styles, labels, and actions, making it versatile for various use cases.
+</Note>
+<Warning>
+Ensure that each button has a unique identifier to avoid conflicts and unintended behavior.
+</Warning>

@@ -1,98 +1,88 @@
 ---
 title: 'Development'
-description: 'Learn how to preview changes locally'
+description: 'Learn how to make changes to the project'
 ---
+
+# Setup
 
 <Info>
   **Prerequisite** You should have installed Node.js (version 18.10.0 or
   higher).
 </Info>
 
-Step 1. Install Mintlify on your OS:
+## Installation
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/wumpusjs/wumpus.js
+```
+
+### Install Dependencies
 
 <CodeGroup>
 
 ```bash npm
-npm i -g mintlify
+npm i
 ```
 
-```bash yarn
-yarn global add mintlify
-```
-
-</CodeGroup>
-
-Step 2. Go to the docs are located (where you can find `mint.json`) and run the following command:
-
-```bash
-mintlify dev
-```
-
-The documentation website is now available at `http://localhost:3000`.
-
-### Custom Ports
-
-Mintlify uses port 3000 by default. You can use the `--port` flag to customize the port Mintlify runs on. For example, use this command to run in port 3333:
-
-```bash
-mintlify dev --port 3333
-```
-
-You will see an error like this if you try to run Mintlify in a port that's already taken:
-
-```md
-Error: listen EADDRINUSE: address already in use :::3000
-```
-
-## Mintlify Versions
-
-Each CLI is linked to a specific version of Mintlify. Please update the CLI if your local website looks different than production.
-
-<CodeGroup>
-
-```bash npm
-npm i -g mintlify@latest
-```
-
-```bash yarn
-yarn global upgrade mintlify
+```bash pnpm
+pnpm i
 ```
 
 </CodeGroup>
 
-## Deployment
+### Create a `.env` File
 
-<Tip>
-  Unlimited editors available under the [Startup
-  Plan](https://mintlify.com/pricing)
-</Tip>
+```bash
+APPLICATION_ID="YOUR_APPLICATION_ID"
+TOKEN="YOUR_BOT_TOKEN"
+DATABASE_HOST="YOUR_HOST_ADRESS_OR_IP"
+DATABASE_PORT="YOUR_DB_PORT"
+DATABASE_USER="YOUR_DB_USER"
+DATABASE_PASSWORD="YOUR_DB_PASSWORD"
+DATABASE_NAME="YOUR_DB_NAME"
+ENVIRONMENT="development"
+```
+<Warning>
+  The `ENVIRONMENT` variable should be set to `development` for local development.
+</Warning>
+<Warning>
+  The `ENVIRONMENT` doesnt support any other value than `development` for now. Because of the current state of the project, it is not recommended to use the `production` value.
+</Warning>
+<Warning>
+  This project uses PostgreSQL as the database. Other databases are not supported at the moment.
+</Warning>
 
-You should see the following if the deploy successfully went through:
+## Building the Project
 
-<Frame>
-  <img src="/images/checks-passed.png" style={{ borderRadius: '0.5rem' }} />
-</Frame>
+```bash
+tsc -p tsconfig.json
+```
 
-## Troubleshooting
+<Warning>
+  The project uses TypeScript. You need to compile every time the TypeScript files to JavaScript before running the project.
+</Warning>
+<Info>
+  You need to download the TypeScript compiler if you haven't already. You can do this by running `npm i -g typescript`.
+</Info>
 
-Here's how to solve some common problems when working with the CLI.
+## Running the Project
 
-<AccordionGroup>
-  <Accordion title="Mintlify is not loading">
-    Update to Node v18. Run `mintlify install` and try again.
-  </Accordion>
-  <Accordion title="No such file or directory on Windows">
-Go to the `C:/Users/Username/.mintlify/` directory and remove the `mint`
-folder. Then Open the Git Bash in this location and run `git clone
-https://github.com/mintlify/mint.git`.
+```bash
+node dist/index.js
+```
 
-Repeat step 3.
+### Using PM2 (for production)
 
-  </Accordion>
-  <Accordion title="Getting an unknown error">
-    Try navigating to the root of your device and delete the ~/.mintlify folder.
-    Then run `mintlify dev` again.
-  </Accordion>
-</AccordionGroup>
+```bash
+pm2 start dist/index.js --name wumpus-client
+```
 
-Curious about what changed in a CLI version? [Check out the CLI changelog.](/changelog/command-line)
+<Info>
+  You need to download the PM2 process manager for this command if you haven't already . You can do this by running `npm i -g pm2`.
+</Info>
+
+<Info>
+  The rest of this documentation is still under construction. Please check back later.
+</Info>

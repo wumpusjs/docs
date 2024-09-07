@@ -1,0 +1,371 @@
+---
+title: 'State Management'
+description: 'This system is a state-driven framework within the Wumpus Discord bot, designed to manage interactive messages dynamically. It allows you to handle Discord interactions (like button presses) by updating a central state, automatically re-rendering embeds and buttons as necessary.'
+icon: 'house'
+---
+
+## Overview
+
+By leveraging this system, developers can create sophisticated, real-time interactions in a modular way. It abstracts the complexity of manually handling user inputs and state changes, making it easier to create responsive, interactive bots that maintain state across interactions.
+
+The system is composed of several key classes and entities, such as:
+
+-   **Stator**: The state manager that registers and handles the stateful components.
+-   **ReactiveEmbed**: Defines interactive Discord embeds that react to state changes.
+-   **ReactiveState**: Manages the reactive state of the embed.
+-   **State Entity**: Stores persistent state in the database for recovery across sessions.
+
+### General Architecture
+
+The architecture of the system revolves around managing state reactively, allowing the UI (buttons and embeds) to reflect the current state automatically. Each interaction with a button triggers a state update, and the system ensures the UI is re-rendered with the new state values. This creates a smooth, consistent user experience.
+
+## Stator
+
+### Purpose
+
+The `Stator` class serves as the main state manager in the bot, keeping track of all active `ReactiveEmbed` instances. It listens to button interactions and forwards them to the correct `ReactiveEmbed` based on a unique identifier.
+
+### Properties
+
+<ResponseField name="client" type="Wumpus" required>
+	The instance of the bot’s client that interacts with Discord.
+</ResponseField>
+<ResponseField name="reactives" type="Map<string, ReactiveEmbed>" required>
+	A map of currently registered `ReactiveEmbed` instances, keyed by their
+	unique identifier.
+</ResponseField>
+
+### Methods
+
+<ResponseField name="constructor" type="Function => void">
+  Initializes the `Stator` with the bot client.
+
+**Args:**
+
+  <ResponseField name="client" type="Wumpus">
+  The client object.
+  </ResponseField>
+</ResponseField>
+<ResponseField name="handle" type="Function">
+ Handles button interactions by locating the correct `ReactiveEmbed` based on its identifier.
+
+  <Expandable title="Parameters">
+    <ResponseField name="identifier" type="string">
+      The identifier of the `ReactiveEmbed` instance handling the interaction.
+    </ResponseField>
+    <ResponseField name="interaction" type="ButtonInteraction">
+      The `ButtonInteraction` received from Discord.
+    </ResponseField>
+    <ResponseField name="state" type="State">
+      The current state of the embed, passed during the interaction.
+    </ResponseField>
+    <ResponseField name="buttonIdentifier" type="string">
+      The unique identifier of the button pressed.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## ReactiveEmbed
+
+### Purpose
+
+`ReactiveEmbed` is the core component of this system, defining a dynamic, interactive message that can change based on user actions. It manages its own state (using `ReactiveState`), a template for rendering the embed, and the associated buttons that users can interact with.
+
+When a button is pressed, `ReactiveEmbed` updates its state, rerenders the embed with the new data, and sends an updated message back to Discord.
+
+### Properties
+
+<ResponseField name="identifier" type="string">
+A unique identifier for the embed, used to reference it within the `Stator` system.
+</ResponseField>
+<ResponseField name="state" type="ReactiveState">
+An instance of `ReactiveState` that holds the current state of the embed. Any changes to the state automatically trigger updates.
+</ResponseField>
+<ResponseField name="embedTemplate" type="EmbedTemplate">
+A predefined template for rendering the embed. The template may include dynamic fields that depend on the current state.
+</ResponseField>
+<ResponseField name="buttons" type="Function<Button[]>">
+  A function that returns an array of buttons to be rendered with the embed, based on the current state.
+
+  <Expandable title="Parameters">
+    <ResponseField name="state" type="DeepReactive">
+      The current state
+    </ResponseField>
+    <ResponseField name="reactive" type="ReactiveState">
+      The main state holder object for methods like `partial`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="handleStateUpdate" type="(newState: any) => void">
+  An optional handler function that gets called whenever the state is updated.
+  <Expandable title="Parameters">
+    <ResponseField name="newState" type="State">
+      The new state for replacing old one
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Methods
+
+<ResponseField name="constructor">
+	Initializes a new `ReactiveEmbed` instance with the specified options.
+	<Expandable title="Parameters">
+		<ResponseField name="handleStateUpdate" type="ReactiveEmbedOptions">
+			An object containing properties such as `identifier`,
+			`initialState`, `embedTemplate`, `buttons`, and an optional
+			`handleStateUpdate` function.
+		</ResponseField>
+	</Expandable>
+</ResponseField>
+<ResponseField name="getEmbed" type="Function<EmbedBuilder>">
+	Generates an `EmbedBuilder` instance based on the current state and the
+	template provided. This is the visual component that users will see.
+	<Expandable title="Parameters">
+		<ResponseField name="user" type="User">
+			The user viewing the embed.
+		</ResponseField>
+		<ResponseField name="locale" type="Locale">
+			The locale (language) to use for localizing the embed.
+		</ResponseField>
+	</Expandable>
+</ResponseField>
+<ResponseField
+	name="getButtons"
+	type="Function<ActionRowBuilder[] or ButtonBuilder[]>"
+>
+	Returns the buttons associated with the current state. If `format` is
+	`true`, it returns buttons in the form of `ActionRowBuilder[]` suitable for
+	embedding into messages.
+	<Expandable title="Parameters">
+		<ResponseField name="format" type="boolean">
+			If `true`, the buttons are returned as action rows.
+		</ResponseField>
+	</Expandable>
+</ResponseField>
+<ResponseField name="handle" type="Function<void>">
+	Handles user interactions by locating the relevant button based on the
+	button identifier. After processing the interaction, it updates the message
+	with the new state.
+	<Expandable title="Parameters">
+		<ResponseField name="client" type="Wumpus">
+			The bot’s client instance.
+		</ResponseField>
+		<ResponseField name="interaction" type="ButtonInteraction">
+			The `ButtonInteraction` event.
+		</ResponseField>
+		<ResponseField name="state" type="State">
+			The current state object.
+		</ResponseField>
+		<ResponseField name="buttonIdentifier" type="string">
+			The identifier of the button being interacted with.
+		</ResponseField>
+	</Expandable>
+</ResponseField>
+
+<ResponseField name="send" type="Function<Message>">
+  Sends the initial message with the embed and buttons to Discord. Registers the `ReactiveEmbed` instance in `Stator` if it hasn’t been already.
+  
+  <Expandable title="Parameters">
+    <ResponseField name="client" type="Wumpus">
+      The bot’s client instance.
+    </ResponseField>
+    <ResponseField name="interaction" type="ChatInputCommandInteraction">
+      The command interaction triggering the message.
+    </ResponseField>
+  </Expandable>
+
+Returns: A promise that resolves after the message is sent.
+
+</ResponseField>
+
+### Example Usage
+
+```typescript
+const counterEmbed = new ReactiveEmbed({
+	identifier: 'test-counter',
+	buttons: (state) => [
+		new Button({
+			identifier: 'test-counter-dec',
+			execute: async (interaction) => {
+				state.count--;
+			},
+			labels: {
+				'en-US': `Decrement (${state.count - 1})`,
+			},
+		}),
+		new Button({
+			identifier: 'test-counter-inc',
+			execute: async () => {
+				state.count++;
+			},
+			labels: {
+				'en-US': `Increment (${state.count + 1})`,
+			},
+		}),
+	],
+	embedTemplate: new EmbedTemplate({
+		title: {
+			'en-US': 'Test',
+		},
+		description: {
+			'en-US': 'Count: {{count}}',
+		},
+		type: EmbedType.Info,
+	}),
+	initialState: {
+		count: 0,
+	},
+});
+
+// Usage
+counterEmbed.send(client, interaction);
+```
+
+---
+
+## ReactiveState
+
+### Purpose
+
+The `ReactiveState` class is responsible for managing the internal state of a `ReactiveEmbed`. It ensures that state changes trigger updates to the UI, and it notifies relevant components whenever a particular state value is modified.
+
+This class implements a "reactive" system by using deeply nested objects that trigger updates when any part of the state is modified.
+
+#### Properties
+
+<Warning>Updating this value manually may produce unexpected results.</Warning>
+<ResponseField name="_state" type="DeepReactive">
+	The current reactive state of the embed, which is deeply nested and can
+	trigger updates at any level.
+</ResponseField>
+<ResponseField name="handlers" type="Record">
+	A collection of handler functions, keyed by the name of the state property
+	they monitor.
+	<Expandable title="Record Structure">
+		<ResponseField name="key" type="string">
+			The field listener name.
+		</ResponseField>
+		<ResponseField name="value" type="Function[]">
+			Listeners
+			<Expandable title="Parameters">
+				<ResponseField name="value" type="DeepReactive">
+					The current state
+				</ResponseField>
+			</Expandable>
+		</ResponseField>
+	</Expandable>
+</ResponseField>
+<ResponseField name="globals" type="Function[]">
+	A collection of global state change handlers, which are triggered whenever
+	any part of the state changes.
+	<Expandable title="Child Function Parameter">
+		<ResponseField name="value" type="DeepReactive">
+			The current state
+		</ResponseField>
+	</Expandable>
+</ResponseField>
+
+### Methods
+
+<ResponseField name="constructor" type="void">
+	Initializes a new `ReactiveState` instance with the given initial state.
+
+  <Expandable title="Parameters">
+    <ResponseField name="initialState" type="DeepReactive">
+      The initial state object.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="addHandler" type="string">
+	Registers a handler function that gets called whenever a specific property in the state changes.
+
+  <Expandable title="Parameters">
+    <ResponseField name="property" type="string">
+      The name of the state property to watch.
+    </ResponseField>
+    <ResponseField name="handler" type="Function">
+      The function to call when the property changes.
+      <Expandable title="Parameters">
+        <ResponseField name="value" type="DeepReactive">
+          The updated state
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="addGlobalHandler" type="string">
+	Registers a handler function that gets called whenever any part of the state changes.
+
+  <Expandable title="Parameters">
+    <ResponseField name="handler" type="Function">
+      The function to call on any state change.
+      <Expandable title="Parameters">
+        <ResponseField name="value" type="DeepReactive">
+          The updated state
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="updateState" type="string">
+	Updates the current state to a new value and triggers global handlers.
+  <Expandable title="Parameters">
+    <ResponseField name="newState" type="DeepReactive">
+      The new state to replace the current state.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="partial" type="string">
+	Partially updates the state by merging new data into the existing state. Optionally triggers state update notifications.
+
+  <Expandable title="Parameters">
+    <ResponseField name="partialState" type="Partial<DeepReactive>">
+      The partial state object to merge with the current state.
+    </ResponseField>
+    <ResponseField name="notify" type="boolean">
+      Whether to notify handlers of the state update. (Default = `true`)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## State Entity
+
+### Purpose
+
+The `State` entity represents a database record that stores the current state of a `ReactiveEmbed`. By persisting state to the database, the system can recover state across bot restarts or when an interaction occurs later. Each state record corresponds to a unique `ReactiveEmbed` and holds the serialized state data.
+
+### Properties
+
+<ResponseField name="id" type="string">
+	The unique identifier for the state record, used to reference it in the
+	database.
+</ResponseField>
+<ResponseField name="state" type="Object">
+	The serialized state data stored as JSON.
+</ResponseField>
+<ResponseField name="identifier" type="string">
+	The unique identifier for the `ReactiveEmbed` this state belongs to.
+</ResponseField>
+<ResponseField name="createdAt" type="Date">
+	The timestamp for when this state record was created.
+</ResponseField>
+
+## Additional Notes
+
+<Info>
+	**Localization**: The `ReactiveEmbed` system supports localization for both
+	embed content and button labels. Developers should provide localized strings
+	for each supported locale, using the appropriate keys in the `EmbedTemplate`
+	and `Button` definitions.
+</Info>
+<Info>
+	**State Persistence**: By default, the `State` entity allows state to be
+	stored persistently in a database. This ensures that `ReactiveEmbed`
+	instances can resume their previous state after bot restarts or when
+	interactions are handled over time.
+</Info>
+<Warning>
+	**Button Identifier Uniqueness**: Ensure that all button identifiers are
+	globally unique. If two buttons share the same identifier, interactions may
+	be incorrectly routed.
+</Warning>

@@ -1,34 +1,46 @@
 ---
 title: Introduction
-description: 'Welcome to the home of your new documentation'
+description: 'Welcome to the new way of building Discord bots'
 ---
 
-<img
-  className="block dark:hidden"
-  src="/images/hero-light.svg"
-  alt="Hero Light"
-/>
-<img
-  className="hidden dark:block"
-  src="/images/hero-dark.svg"
-  alt="Hero Dark"
-/>
+Get started with Wumpus.js, a framework for building Discord bots with TypeScript. Wumpus.js is designed to be simple, flexible, and efficient. It provides a set of tools and utilities to help you build and maintain your Discord bot with ease.
+
+<Info>
+  Currently our library is in the early stages of development. We are working hard to provide you with a stable and feature-rich library. If you encounter any issues or have any suggestions, feel free to open an issue on our GitHub repository.
+</Info>
+<Info>
+  **Note:** This documentation is still a work in progress. We are constantly updating and improving it. If you have any suggestions or feedback, feel free to open an issue on our GitHub repository.
+</Info>
+<Warning>
+  For at the moment, we use Discord.js as the main library for interacting with the Discord API. We are planning to switch to raw Discord Gateway & REST API in the future.
+</Warning>
 
 ## Components
 
 <CardGroup cols={2}>
-  <Card
-    title="Wumpus"
-    icon="house"
-    href="https://mintlify.com/docs/components/wumpus"
-  >
-    Core part of the Discord bot
-  </Card>
-  <Card
-    title="Button"
-    icon="square-check"
-    href="https://mintlify.com/docs/components/button"
-  >
-    Customizable and reusable button system
-  </Card>
+	<Card title="Wumpus" icon="house" href="/components/wumpus">
+		Core part of the Discord bot
+	</Card>
+	<Card title="Button" icon="terminal" href="/components/button">
+		Customizable and reusable button system
+	</Card>
+	<Card title="Command" icon="terminal" href="/components/command">
+		Creating and managing Discord slash commands
+	</Card>
+	<Card title="Database" icon="database" href="/components/database">
+		Managing the database connection, initializing repositories, and providing access to them
+	</Card>
+	<Card title="Event" icon="flag" href="/components/event">
+		Handle Discord events in a structured and efficient manner
+	</Card>
+	<Card title="Middleware" icon="bars-staggered" href="/components/middleware">
+		Interception and processing of Discord events before they reach their final handlers
+	</Card>
+	<Card
+		title="State Management"
+		icon="diagram-project"
+		href="/components/state-management"
+	>
+		Manage reactive state and create dynamic, interactive embeds
+	</Card>
 </CardGroup>

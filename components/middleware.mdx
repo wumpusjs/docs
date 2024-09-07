@@ -1,0 +1,170 @@
+---
+title: 'Middleware'
+description: 'The Middleware System is a powerful and flexible component of our Discord bot framework, allowing for the interception and processing of Discord events before they reach their final handlers. This system enables developers to add custom logic, perform checks, or modify data at various points in the event lifecycle.'
+icon: 'bars-staggered'
+---
+
+## Components
+
+### Middleware
+
+The `Middleware` class is the core building block of the middleware system. It encapsulates the logic for handling a specific Discord event.
+
+#### Properties
+
+<ResponseField name="event" type="keyof ClientEvents" required>
+  The Discord event that this middleware handles (e.g., 'messageCreate', 'interactionCreate').
+</ResponseField>
+
+<ResponseField name="handler" type="MiddlewareHandler<T>" required>
+  The function that will be executed when the event occurs.
+</ResponseField>
+
+<ResponseField name="once" type="boolean" default="false">
+  If true, the middleware will only be executed once and then removed.
+</ResponseField>
+
+#### Constructor
+
+```typescript
+constructor(
+  event: T,
+  handler: MiddlewareHandler<T>,
+  once: boolean = false
+)
+```
+
+Creates a new Middleware instance.
+
+### MiddlewareManager
+
+The `MiddlewareManager` class is responsible for managing and executing middlewares for different Discord events.
+
+#### Properties
+
+<ResponseField name="client" type="Wumpus" required>
+  The main Wumpus client instance.
+</ResponseField>
+
+<ResponseField name="middlewares" type="Map<keyof ClientEvents, Middleware<any>[]>" required>
+  A map containing all registered middlewares, organized by event type.
+</ResponseField>
+
+#### Methods
+
+<ResponseField name="addMiddleware" type="(middleware: Middleware<any>) => this">
+  Adds a new middleware to the manager. If it's the first middleware for a particular event, it also sets up the event listener.
+</ResponseField>
+
+<ResponseField name="handleEvent" type="<T extends keyof ClientEvents>(event: T, ...args: ClientEvents[T]) => void">
+  Handles the execution of all middlewares for a specific event.
+</ResponseField>
+
+## Usage
+
+### Creating a Middleware
+
+To create a new middleware, instantiate the `Middleware` class with the appropriate event and handler:
+
+```typescript
+const myMiddleware = new Middleware('messageCreate', async (args, next, client) => {
+  const [message] = args;
+  console.log(`Received message: ${message.content}`);
+  await next(); // Call next to pass control to the next middleware
+});
+```
+
+### Adding a Middleware
+
+To add a middleware to the system, use the `addMiddleware` method of the `MiddlewareManager`:
+
+```typescript
+client.middleware.addMiddleware(myMiddleware);
+```
+
+### Middleware Execution Flow
+
+When an event occurs:
+
+1. The `MiddlewareManager` receives the event.
+2. It retrieves all middlewares registered for that event.
+3. It executes each middleware in the order they were added.
+4. Each middleware can:
+   - Perform actions
+   - Modify the event data
+   - Call `next()` to pass control to the next middleware
+   - Return a value to stop the execution chain
+
+### One-time Middlewares
+
+To create a middleware that only executes once:
+
+```typescript
+const oneTimeMiddleware = new Middleware('ready', async (args, next, client) => {
+  console.log('Bot is ready!');
+  await next();
+}, true); // Set the 'once' parameter to true
+```
+
+## Advanced Usage
+
+### Conditional Next Calling
+
+Middlewares can conditionally call `next()`:
+
+```typescript
+new Middleware('messageCreate', async (args, next, client) => {
+  const [message] = args;
+  if (message.content.startsWith('!')) {
+    await next(); // Only process commands
+  }
+});
+```
+
+### Modifying Event Data
+
+Middlewares can modify the event data before passing it to the next middleware:
+
+```typescript
+new Middleware('messageCreate', async (args, next, client) => {
+  const [message] = args;
+  message.content = message.content.toLowerCase();
+  await next();
+});
+```
+
+### Error Handling
+
+Implement error handling in your middlewares:
+
+```typescript
+new Middleware('messageCreate', async (args, next, client) => {
+  try {
+    await next();
+  } catch (error) {
+    console.error('An error occurred in the middleware chain:', error);
+  }
+});
+```
+
+## Best Practices
+
+1. Keep middlewares focused on a single responsibility.
+2. Order your middlewares carefully, as the execution order matters.
+3. Always call `next()` unless you intentionally want to stop the middleware chain.
+4. Use type annotations to ensure type safety when working with event arguments.
+5. Implement error handling to prevent unhandled promise rejections.
+
+## Notes
+
+<Note>
+The middleware system provides a powerful way to intercept and process Discord events, allowing for modular and reusable code.
+</Note>
+
+<Warning>
+Be cautious when modifying event data in middlewares, as it may affect the behavior of subsequent middlewares and event handlers.
+</Warning>
+
+<Info>
+The `MiddlewareManager` automatically sets up event listeners when the first middleware for an event is added, reducing boilerplate code.
+</Info>

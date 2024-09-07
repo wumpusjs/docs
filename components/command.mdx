@@ -1,0 +1,127 @@
+---
+title: 'Command'
+description: 'The Command class is a core component for creating and managing Discord slash commands. It provides a type-safe and flexible way to define command options, localized names and descriptions, and execution logic, while also integrating with permissions and database repositories.'
+icon: 'terminal'
+---
+
+### Properties
+<ResponseField name="name" type="Map<Locale, string>" required>
+A map of localized command names.
+</ResponseField>
+<ResponseField name="description" type="Map<Locale, string>" required>
+A map of localized command descriptions.
+</ResponseField>
+<ResponseField name="execute" type="CommandExecutor" required>
+The function to be executed when the command is invoked.
+</ResponseField>
+<ResponseField name="defaultLocale" type="LocaleString" required>
+The default locale for the command (default: 'en-US').
+</ResponseField>
+<ResponseField name="options" type="InferOptions<T, L>" required>
+The command options.
+</ResponseField>
+<ResponseField name="timeout" type="number">
+The command timeout in milliseconds (default: -1, no timeout).
+</ResponseField>
+<ResponseField name="repositories" type="R">
+An optional array of TypeORM entity classes or schemas.
+</ResponseField>
+<ResponseField name="permission" type="PERMISSION">
+An optional permission level required to use the command.
+</ResponseField>
+
+### Methods
+<ResponseField name="constructor" type="Command">
+Creates a new Command instance with the given options.
+</ResponseField>
+<ResponseField name="addName" type="this">
+Adds a localized name for the command.
+</ResponseField>
+<ResponseField name="addDescription" type="this">
+Adds a localized description for the command.
+</ResponseField>
+<ResponseField name="removeName" type="this">
+Removes a localized name.
+</ResponseField>
+<ResponseField name="removeDescription" type="this">
+Removes a localized description.
+</ResponseField>
+<ResponseField name="getName" type="string | undefined">
+Gets the command name for the specified locale.
+</ResponseField>
+<ResponseField name="getDescription" type="string | undefined">
+Gets the command description for the specified locale.
+</ResponseField>
+<ResponseField name="toSlashCommand" type="SlashCommandBuilder">
+Converts the Command instance to a Discord.js SlashCommandBuilder.
+</ResponseField>
+
+### Option Types
+The Command class supports the following option types:
+- `ATTACHMENT`
+- `BOOLEAN`
+- `CHANNEL`
+- `INTEGER`
+- `MEMBER`
+- `MENTIONABLE`
+- `NUMBER`
+- `ROLE`
+- `STRING`
+- `USER`
+
+### Permissions
+<ResponseField name="PERMISSION" type="enum">
+An enum defining different permission levels for command usage:
+- `SUPERUSER`: Automatically granted to specific users (bot owner or team members).
+- `Administrator`: Manually granted permission level.
+- `Moderator`: Manually granted permission level.
+</ResponseField>
+
+### Lifecycle
+1. Create a new Command instance with the desired options.
+2. Define localized names and descriptions using `addName` and `addDescription` methods.
+3. Set up command options, timeout, repositories, and permissions.
+4. Implement the `execute` function to handle command logic.
+5. Use `toSlashCommand` to convert the Command instance to a Discord.js SlashCommandBuilder when registering commands.
+
+### Notes
+<Note>
+The Command class uses TypeScript generics to provide type safety for command options and inferred types.
+</Note>
+<Note>
+The `execute` function receives the interaction, options, client, and injected repositories as arguments, allowing for flexible command implementation.
+</Note>
+<Warning>
+Be cautious when assigning the `SUPERUSER` permission, as it grants elevated access to command usage.
+</Warning>
+
+### Example Usage
+```typescript
+const myCommand = new Command({
+  name: {
+    'en-US': 'my-command',
+    'es-ES': 'mi-comando'
+  },
+  description: {
+    'en-US': 'This is my command',
+    'es-ES': 'Este es mi comando'
+  },
+  options: [
+    {
+      type: 'STRING',
+      name: { 'en-US': 'input', 'es-ES': 'entrada' },
+      description: { 'en-US': 'Input string', 'es-ES': 'Cadena de entrada' },
+      required: true
+    }
+  ],
+  defaultLocale: 'en-US',
+  timeout: 5000,
+  repositories: [MyEntity],
+  permission: PERMISSION.Moderator,
+  execute: async (interaction, options, client, myEntityRepository) => {
+    // Command execution logic here
+  }
+});
+```
+
+This example creates a new command with localized names and descriptions, a string option, a timeout of 5 seconds, and requires moderator permissions to use. It also injects a TypeORM repository for `MyEntity`.

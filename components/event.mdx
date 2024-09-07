@@ -1,0 +1,164 @@
+---
+title: 'Event'
+description: 'The Events System is a crucial component of our Discord bot framework, designed to handle Discord events in a structured and efficient manner. It allows developers to easily create, manage, and load event handlers for various Discord events.'
+icon: 'flag'
+---
+
+## Components
+
+### Event Class
+
+The `Event` class is the core of the Events System, representing a single event handler.
+
+#### Properties
+
+<ResponseField name="once" type="boolean" default="false">
+  If true, the event handler will only be executed once and then removed.
+</ResponseField>
+
+<ResponseField name="event" type="Events" required>
+  The Discord event that this handler is responsible for (e.g., 'messageCreate', 'interactionCreate').
+</ResponseField>
+
+<ResponseField name="execute" type="(...args: any[]) => void" required>
+  The function that will be executed when the event occurs.
+</ResponseField>
+
+#### Constructor
+
+```typescript
+constructor(options: EventOptions<Events>)
+```
+
+Creates a new Event instance with the specified options.
+
+### EventOptions Interface
+
+The `EventOptions` interface defines the structure for creating an Event.
+
+<ResponseField name="once" type="boolean" optional>
+  Specifies if the event should only be executed once.
+</ResponseField>
+
+<ResponseField name="event" type="Event" required>
+  The Discord event to handle.
+</ResponseField>
+
+<ResponseField name="execute" type="(args: ClientEvents[Event], client: Wumpus) => void" required>
+  The function to execute when the event occurs.
+</ResponseField>
+
+## Utility Functions
+
+### getEvents
+
+```typescript
+getEvents(): Promise<{ success: boolean, files: string[] }>
+```
+
+Retrieves all event files from the `./src/events` directory.
+
+### loadEvents
+
+```typescript
+loadEvents(client: Wumpus): Promise<void>
+```
+
+Loads all event handlers and registers them with the MiddlewareManager.
+
+## Usage
+
+### Creating an Event Handler
+
+To create a new event handler, create a new file in the `./src/events` directory:
+
+```typescript
+import Event from '../classes/Event';
+import { Message } from 'discord.js';
+
+export default new Event({
+  event: 'messageCreate',
+  execute: (args: [Message], client: Wumpus) => {
+    const [message] = args;
+    console.log(`Received message: ${message.content}`);
+  }
+});
+```
+
+### Loading Events
+
+The `loadEvents` function is typically called during the bot's initialization process:
+
+```typescript
+import { loadEvents } from './utils';
+
+async function initializeBot() {
+  const client = new Wumpus();
+  await loadEvents(client);
+  // ... other initialization steps
+}
+```
+
+## Event Loading Process
+
+1. The `loadEvents` function is called with the Wumpus client instance.
+2. It retrieves all event files using `getEvents()`.
+3. For each event file:
+   - It imports the exported content.
+   - Verifies that the exported content is an instance of `Event`.
+   - Creates a new `Middleware` instance for the event.
+   - Adds the middleware to the client's MiddlewareManager.
+
+## Advanced Usage
+
+### One-time Events
+
+To create an event that only fires once:
+
+```typescript
+export default new Event({
+  event: 'ready',
+  once: true,
+  execute: (args, client) => {
+    console.log(`Bot is ready! Logged in as ${client.instance.user?.tag}`);
+  }
+});
+```
+
+### Accessing Client in Events
+
+The client instance is passed to the execute function, allowing access to all client properties and methods:
+
+```typescript
+export default new Event({
+  event: 'messageCreate',
+  execute: (args: [Message], client: Wumpus) => {
+    const [message] = args;
+    if (message.content === '!ping') {
+      message.reply(`Pong! Latency is ${client.instance.ws.ping}ms.`);
+    }
+  }
+});
+```
+
+## Best Practices
+
+1. Keep each event handler in a separate file for better organization.
+2. Use TypeScript to ensure type safety for event arguments.
+3. Utilize the `once` option for events that should only occur once, like the 'ready' event.
+4. Handle errors within your event handlers to prevent unhandled exceptions.
+5. Use the client parameter in your event handlers to access bot-wide functionality and data.
+
+## Notes
+
+<Note>
+The Events System integrates seamlessly with the Middleware System, allowing for a flexible and powerful event handling architecture.
+</Note>
+
+<Warning>
+Ensure that your event files export a default instance of the Event class. The loader will ignore any file that doesn't follow this pattern.
+</Warning>
+
+<Info>
+The system automatically converts event handlers into middlewares, allowing them to benefit from the middleware chain's features.
+</Info>
